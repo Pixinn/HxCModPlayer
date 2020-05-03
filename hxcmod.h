@@ -12,12 +12,14 @@
 // File : hxcmod.h
 // Contains: a tiny mod player
 //
-// Written by: Jean François DEL NERO
+// Written by: Jean Franï¿½ois DEL NERO
 //
 // Change History (most recent first):
 ///////////////////////////////////////////////////////////////////////////////////
 #ifndef MODPLAY_DEF
 #define MODPLAY_DEF
+
+#include <stdint.h>
 
 #ifndef HXCMOD_SLOW_TARGET
 	#define HXCMOD_STATE_REPORT_SUPPORT 1
@@ -27,29 +29,29 @@
 #endif
 
 // Basic type
-typedef unsigned char   muchar;
-typedef signed   char   mchar;
-typedef unsigned short  muint;
-typedef          short  mint;
-typedef unsigned long   mulong;
+typedef uint8_t    muchar;
+typedef int8_t     mchar;
+typedef uint16_t   muint;
+typedef int16_t    mint;
+typedef uint32_t   mulong;
 
 #ifdef HXCMOD_16BITS_TARGET
-	typedef unsigned short  mssize;
+	typedef uint16_t  mssize;
 #else
-	typedef unsigned long   mssize;
+	typedef uint32_t   mssize;
 #endif
 
 #ifdef HXCMOD_8BITS_OUTPUT
 	#ifdef HXCMOD_UNSIGNED_OUTPUT
-	typedef unsigned char  msample;
+	typedef uint8_t  msample;
 	#else
 	typedef signed char    msample;
 	#endif
 #else
 	#ifdef HXCMOD_UNSIGNED_OUTPUT
-	typedef unsigned short msample;
+	typedef uint16_t msample;
 	#else
-	typedef signed short   msample;
+	typedef int16_t msample;
 	#endif
 #endif
 
@@ -217,37 +219,37 @@ typedef struct {
 //
 typedef struct track_state_
 {
-	unsigned char instrument_number;
-	unsigned short cur_period;
-	unsigned char  cur_volume;
-	unsigned short cur_effect;
-	unsigned short cur_parameffect;
+	uint8_t instrument_number;
+	uint16_t cur_period;
+	uint8_t  cur_volume;
+	uint16_t cur_effect;
+	uint16_t cur_parameffect;
 }track_state;
 
 typedef struct tracker_state_
 {
-	int number_of_tracks;
-	int bpm;
-	int speed;
-	int cur_pattern;
-	int cur_pattern_pos;
-	int cur_pattern_table_pos;
-	unsigned int buf_index;
+	int16_t number_of_tracks;
+	int16_t bpm;
+	int16_t speed;
+	int16_t cur_pattern;
+	int16_t cur_pattern_pos;
+	int16_t cur_pattern_table_pos;
+	uint32_t buf_index;
 	track_state tracks[NUMMAXCHANNELS];
 }tracker_state;
 
 typedef struct tracker_state_instrument_
 {
 	char name[22];
-	int active;
+	int16_t active;
 }tracker_state_instrument;
 
 typedef struct tracker_buffer_state_
 {
-	int nb_max_of_state;
-	int nb_of_state;
-	int cur_rd_index;
-	int sample_step;
+	int16_t nb_max_of_state;
+	int16_t nb_of_state;
+	int16_t cur_rd_index;
+	int16_t sample_step;
 	char name[64];
 	tracker_state_instrument instruments[31];
 	tracker_state * track_state_buf;
@@ -266,7 +268,7 @@ typedef struct tracker_buffer_state_
 // - "Load" a MOD from memory (from "mod_data" with size "mod_data_size").
 //   Return 1 if success. 0 in case of error.
 // -------------------------------------------
-// void hxcmod_fillbuffer( modcontext * modctx, unsigned short * outbuffer, mssize nbsample, tracker_buffer_state * trkbuf )
+// void hxcmod_fillbuffer( modcontext * modctx, uint16_t * outbuffer, mssize nbsample, tracker_buffer_state * trkbuf )
 //
 // - Generate and return the next samples chunk to outbuffer.
 //   nbsample specify the number of stereo 16bits samples you want.

@@ -12,7 +12,7 @@
 // File : hxcmod.c
 // Contains: a tiny mod player
 //
-// Written by: Jean François DEL NERO
+// Written by: Jean Franï¿½ois DEL NERO
 //
 // You are free to do what you want with this code.
 // A credit is always appreciated if you include it into your prod :)
@@ -124,7 +124,7 @@ static const muchar InvertLoopTable[]={
 
 typedef struct modtype_
 {
-	unsigned char signature[5];
+	uint8_t signature[5];
 	int numberofchannels;
 }modtype;
 
@@ -166,25 +166,25 @@ static modtype modlist[]=
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-static void memcopy( void * dest, void *source, unsigned long size )
+static void memcopy( void * dest, void *source, uint32_t size )
 {
-	unsigned long i;
-	unsigned char * d,*s;
+	uint32_t i;
+	uint8_t * d,*s;
 
-	d=(unsigned char*)dest;
-	s=(unsigned char*)source;
+	d=(uint8_t*)dest;
+	s=(uint8_t*)source;
 	for(i=0;i<size;i++)
 	{
 		d[i]=s[i];
 	}
 }
 
-static void memclear( void * dest, unsigned char value, unsigned long size )
+static void memclear( void * dest, uint8_t value, uint32_t size )
 {
-	unsigned long i;
-	unsigned char * d;
+	uint32_t i;
+	uint8_t * d;
 
-	d = (unsigned char*)dest;
+	d = (uint8_t*)dest;
 	for(i=0;i<size;i++)
 	{
 		d[i]=value;
@@ -216,9 +216,9 @@ static void doFunk(channel * cptr)
 			cptr->funkoffset = 0;
 			if( cptr->sampdata && cptr->length && (cptr->replen > 1) )
 			{
-				if( ( (cptr->samppos) >> 11 ) >= (unsigned long)(cptr->replen+cptr->reppnt) )
+				if( ( (cptr->samppos) >> 11 ) >= (uint32_t)(cptr->replen+cptr->reppnt) )
 				{
-					cptr->samppos = ((unsigned long)(cptr->reppnt)<<11) + (cptr->samppos % ((unsigned long)(cptr->replen+cptr->reppnt)<<11));
+					cptr->samppos = ((uint32_t)(cptr->reppnt)<<11) + (cptr->samppos % ((uint32_t)(cptr->replen+cptr->reppnt)<<11));
 				}
 
 				// Note : Directly modify the sample in the mod buffer...
@@ -1132,9 +1132,9 @@ int hxcmod_load( modcontext * modctx, void * mod_data, int mod_data_size )
 {
 	muint i, j, max, digitfactor;
 	sample *sptr;
-	unsigned char * modmemory,* endmodmemory;
+	uint8_t * modmemory,* endmodmemory;
 
-	modmemory = (unsigned char *)mod_data;
+	modmemory = (uint8_t *)mod_data;
 	endmodmemory = modmemory + mod_data_size;
 
 	if( modmemory )
@@ -1303,7 +1303,7 @@ void hxcmod_fillbuffer(modcontext * modctx, msample * outbuffer, mssize nbsample
 	muint  j;
 	muint c;
 
-	unsigned long k;
+	uint32_t k;
 	unsigned int state_remaining_steps;
 
 #ifdef HXCMOD_OUTPUT_FILTER
@@ -1490,14 +1490,14 @@ void hxcmod_fillbuffer(modcontext * modctx, msample * outbuffer, mssize nbsample
 								}
 
 								if( cptr->length )
-									cptr->samppos = cptr->samppos % (((unsigned long)cptr->length)<<11);
+									cptr->samppos = cptr->samppos % (((uint32_t)cptr->length)<<11);
 								else
 									cptr->samppos = 0;
 							}
 						}
 						else
 						{
-							if( ( cptr->samppos >> 11 ) >= (unsigned long)(cptr->replen+cptr->reppnt) )
+							if( ( cptr->samppos >> 11 ) >= (uint32_t)(cptr->replen+cptr->reppnt) )
 							{
 								if( cptr->update_nxt_repeat )
 								{
@@ -1516,7 +1516,7 @@ void hxcmod_fillbuffer(modcontext * modctx, msample * outbuffer, mssize nbsample
 
 								if( cptr->sampdata )
 								{
-									cptr->samppos = ((unsigned long)(cptr->reppnt)<<11) + (cptr->samppos % ((unsigned long)(cptr->replen+cptr->reppnt)<<11));
+									cptr->samppos = ((uint32_t)(cptr->reppnt)<<11) + (cptr->samppos % ((uint32_t)(cptr->replen+cptr->reppnt)<<11));
 								}
 							}
 						}
@@ -1561,7 +1561,7 @@ void hxcmod_fillbuffer(modcontext * modctx, msample * outbuffer, mssize nbsample
 								else
 									trkbuf->track_state_buf[trkbuf->nb_of_state].tracks[j].cur_period = 0;
 								trkbuf->track_state_buf[trkbuf->nb_of_state].tracks[j].cur_volume = cptr->volume;
-								trkbuf->track_state_buf[trkbuf->nb_of_state].tracks[j].instrument_number = (unsigned char)cptr->sampnum;
+								trkbuf->track_state_buf[trkbuf->nb_of_state].tracks[j].instrument_number = (uint8_t)cptr->sampnum;
 							}
 						}
 #endif
