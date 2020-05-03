@@ -29,10 +29,15 @@
 
 #include "../hxcmod.h"
 
-extern unsigned char rawModData[14388];
+extern unsigned char rawModData[22052];
 
-#define DMA_PAGESIZE 4096
-#define SB_SAMPLE_RATE 11025
+#define DMA_PAGESIZE 6000
+#define SB_SAMPLE_RATE 22050
+#ifdef HXCMOD_MONO_OUTPUT
+	#define NB_CHANNELS 1
+#else
+	#define NB_CHANNELS 2
+#endif
 
 //
 // DMA Programming table
@@ -120,12 +125,6 @@ int init_sb(int port,int irq,int dma)
 		dsp_ver_minor = SB_DSP_rd(port);
 		printf("SB DSP Version %d.%.2d\n", dsp_ver_major, dsp_ver_minor);
 
-		SB_DSP_wr(port,DSP_CMD_ENABLE_SPEAKER);  // Enable speaker
-
-		#define SAMPLE_PERIOD (unsigned char)((65536 - (256000000/(SB_SAMPLE_RATE)))>>8)
-		SB_DSP_wr(port,DSP_CMD_SAMPLE_RATE);     // Set sample rate
-		SB_DSP_wr(port,SAMPLE_PERIOD);
-
 		//////////////////////////////////////////////////////////////////////
 		// Init the 8237A DMA
 
@@ -169,11 +168,30 @@ int init_sb(int port,int irq,int dma)
 
 		//////////////////////////////////////////////////////////////////////
 
-		SB_DSP_wr(port,DSP_CMD_BLOCK_TRANSFER_SIZE); // Set block transfer size
-		SB_DSP_wr(port, (( (DMA_PAGESIZE / 2) - 1 ) ) & 0xFF ); // 2 ITs for the whole DMA buffer.
-		SB_DSP_wr(port, (( (DMA_PAGESIZE / 2) - 1 ) ) >> 8 );
+		#ifdef SB16
+			SB_DSP_wr(port,	DSP_CMD_OUTPUT_RATE);
+			SB_DSP_wr(port,	(unsigned char)(SB_SAMPLE_RATE >> 8));
+			SB_DSP_wr(port,	(unsigned char)(SB_SAMPLE_RATE & 0xFF));
+			SB_DSP_wr(port,	DSP_CMD_OUT_8BIT);
+		#ifdef HXCMOD_MONO_OUTPUT
+				SB_DSP_wr(port,	DSP_CMD_OUT_MONO);
+		#else	
+				SB_DSP_wr(port,	DSP_CMD_OUT_STEREO);
+		#endif
+			SB_DSP_wr(port, (( (DMA_PAGESIZE / 2) - 1 ) ) & 0xFF ); // 2 ITs for the whole DMA buffer.
+			SB_DSP_wr(port, (( (DMA_PAGESIZE / 2) - 1 ) ) >> 8 );
+		#else
+			#define SAMPLE_PERIOD (unsigned char)((65536 - (256000000/(SB_SAMPLE_RATE)))>>8)
+			SB_DSP_wr(port, DSP_CMD_TIME_CSTE);     // Set period
+			SB_DSP_wr(port, SAMPLE_PERIOD);
+			SB_DSP_wr(port,DSP_CMD_BLOCK_TRANSFER_SIZE); // Set block transfer size			
+			SB_DSP_wr(port, (( (DMA_PAGESIZE / 2) - 1 ) ) & 0xFF ); // 2 ITs for the whole DMA buffer.
+			SB_DSP_wr(port, (( (DMA_PAGESIZE / 2) - 1 ) ) >> 8 );
+			SB_DSP_wr(port, DSP_CMD_DMA8_STARTAUTOMODE);  // Start ! (Mono 8 bits unsigned mode)
+		#endif
 
-		SB_DSP_wr(port, DSP_CMD_8BITS_PCM_OUTPUT);  // Start ! (Mono 8 bits unsigned mode)
+		SB_DSP_wr(port,DSP_CMD_ENABLE_SPEAKER);  // Enable "speaker"
+
 
 		printf("SB Init done !\n");
 
@@ -189,15 +207,17 @@ int init_sb(int port,int irq,int dma)
 void stop_sb(int port, int dma)
 {
 	outp(DMAMask[dma], (dma & 0x03) | 0x04); // Stop the 8237A DMA		
-	outp(port + SB_DSP_WRITE_DATCMD_REG, DSP_CMD_DMA8_EXITAUTOMODE); // stops 8-bit "auto-initialize DMA"
+	outp(port + SB_DSP_WRITE_DATCMD_REG, DSP_CMD_DMA8_STOPAUTOMODE); // stops 8-bit "auto-initialize DMA"
 	uninstall_irq();
 }
 
 int main(int argc, char* argv[])
 {
+	
 	int sb_port,sb_irq_int,sb_dma;
 	int i;
 	modcontext * modctx;
+	tracker_buffer_state* read_state;
 	unsigned char last_toggle;
 	clock_t time_start, time_stop, time_process_beg, time_process_acc;
 	int cpu_usage, nb_lost_frames;
@@ -232,7 +252,9 @@ int main(int argc, char* argv[])
 	}
 
 	modctx = malloc(sizeof(modcontext));
-	if(modctx)
+	read_state = malloc(sizeof(tracker_buffer_state));
+
+	if(modctx && read_state)
 	{
 		if( hxcmod_init( modctx ) )
 		{
@@ -243,6 +265,7 @@ int main(int argc, char* argv[])
 			printf("Sound configuration done !\n");
 
 			last_toggle = 0;
+
 
 			if(hxcmod_load( modctx, rawModData, sizeof(rawModData) ))
 			{
@@ -269,12 +292,12 @@ int main(int argc, char* argv[])
 
 						time_process_beg = clock();
 						if(it_toggle)
-						{
-							hxcmod_fillbuffer( modctx, (msample *)&fixed_dma_buffer[0], DMA_PAGESIZE/2, NULL );
+						{							
+							hxcmod_fillbuffer( modctx, (msample *)&fixed_dma_buffer[0], DMA_PAGESIZE/(2*NB_CHANNELS), read_state );
 						}
 						else
 						{
-							hxcmod_fillbuffer( modctx, (msample *)&fixed_dma_buffer[DMA_PAGESIZE/2], DMA_PAGESIZE/2, NULL );
+							hxcmod_fillbuffer( modctx, (msample *)&fixed_dma_buffer[DMA_PAGESIZE/2], DMA_PAGESIZE/(2*NB_CHANNELS), read_state );
 						}
 						time_process_acc += clock() - time_process_beg;
 					}

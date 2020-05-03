@@ -21,14 +21,17 @@
 #define SB_DSP_READ_BUF_IT_STATUS  0xE
 #define SB_DSP_IT16B_STATUS        0xF
 
-#define DSP_CMD_8BITS_PCM_OUTPUT    0x1C
-#define DSP_CMD_SAMPLE_RATE         0x40
+#define DSP_CMD_OUT_8BIT            0xC6
+#define DSP_CMD_OUT_MONO            0x00
+#define DSP_CMD_OUT_STEREO          0x20
+#define DSP_CMD_TIME_CSTE           0x40
 #define DSP_CMD_OUTPUT_RATE         0x41
 #define DSP_CMD_BLOCK_TRANSFER_SIZE 0x48
 #define DSP_CMD_TRANSFER_MODE       0xB6
 #define DSP_CMD_ENABLE_SPEAKER      0xD1
 #define DSP_CMD_STOP                0xD5
-#define DSP_CMD_DMA8_EXITAUTOMODE   0xDA
+#define DSP_CMD_DMA8_STARTAUTOMODE  0x1C
+#define DSP_CMD_DMA8_STOPAUTOMODE   0xDA
 #define DSP_CMD_VERSION             0xE1
 
 extern volatile unsigned char it_flag;

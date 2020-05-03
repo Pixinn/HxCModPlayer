@@ -1,8 +1,13 @@
 !define BLANK ""
 
 CC = wcc
-CCFLAGS = -zq -otexan -s -0 -ob -ol -ol+ -oc -oi -oa -or -oh -bt=dos -fo=.obj -ms
-DEFINES = -dHXCMOD_8BITS_OUTPUT -dHXCMOD_UNSIGNED_OUTPUT -dHXCMOD_MONO_OUTPUT -dHXCMOD_16BITS_TARGET -dHXCMOD_SLOW_TARGET
+CCFLAGS386 = -zq -otexan -s -3 -ob -ol -ol+ -oc -oi -oa -or -oh -bt=dos -fo=.obj -ms
+CCFLAGS8086 = -zq -otexan -s -0 -ob -ol -ol+ -oc -oi -oa -or -oh -bt=dos -fo=.obj -ms 
+DEFINES386 = -dHXCMOD_8BITS_OUTPUT -dHXCMOD_UNSIGNED_OUTPUT -dHXCMOD_SLOW_TARGET -dHXCMOD_16BITS_TARGET -dSB16 
+DEFINES8086 = -dHXCMOD_8BITS_OUTPUT -dHXCMOD_UNSIGNED_OUTPUT -dHXCMOD_MONO_OUTPUT -dHXCMOD_16BITS_TARGET -dHXCMOD_SLOW_TARGET
+
+CCFLAGS = $(CCFLAGS386)
+DEFINES = $(DEFINES386)
 
 sb_io.obj : sb_io.asm .AUTODEPEND
  *wasm sb_io.asm -i="C:\WATCOM/h" -ms -w4 -e25
