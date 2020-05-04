@@ -31,7 +31,7 @@
 
 extern unsigned char rawModData[22052];
 
-#define DMA_PAGESIZE 6000
+#define DMA_PAGESIZE 4096
 #define SB_SAMPLE_RATE 22050
 #ifdef HXCMOD_MONO_OUTPUT
 	#define NB_CHANNELS 1
@@ -221,6 +221,7 @@ int main(int argc, char* argv[])
 	unsigned char last_toggle;
 	clock_t time_start, time_stop, time_process_beg, time_process_acc;
 	int cpu_usage, nb_lost_frames;
+	int last_pattern;
 
 	printf("PC-8086 Real mode HxCMod Test program\n");
 
@@ -269,18 +270,24 @@ int main(int argc, char* argv[])
 
 			if(hxcmod_load( modctx, rawModData, sizeof(rawModData) ))
 			{
-				printf("Playing...\n");
+				printf("Playing \"%s\"\nLength: %d patterns\n", modctx->song.title, modctx->song.length);
 				
 				nb_lost_frames = 0;
 				time_process_acc = 0;
 				time_start = clock();
 
 				// ==== MAIN LOOP ====
-				while(kbhit() == 0)
+				last_pattern = -1;
+				while(kbhit() == 0 && modctx->end_of_song == 0)
 				{
 					if(it_flag)
 					{
 						it_flag = 0x00;
+
+						if( modctx->tablepos != last_pattern) { // on pattern change
+							printf("Pattern %d\n", modctx->tablepos);
+							last_pattern = modctx->tablepos;
+						}
 
 						if( last_toggle == it_toggle )
 						{
@@ -291,23 +298,25 @@ int main(int argc, char* argv[])
 						last_toggle = it_toggle;
 
 						time_process_beg = clock();
-						if(it_toggle)
-						{							
+						if(it_toggle) {							
 							hxcmod_fillbuffer( modctx, (msample *)&fixed_dma_buffer[0], DMA_PAGESIZE/(2*NB_CHANNELS), read_state );
 						}
-						else
-						{
+						else {
 							hxcmod_fillbuffer( modctx, (msample *)&fixed_dma_buffer[DMA_PAGESIZE/2], DMA_PAGESIZE/(2*NB_CHANNELS), read_state );
 						}
-						time_process_acc += clock() - time_process_beg;
+						time_process_acc += clock() - time_process_beg;					
 					}
+					
 				}
 				// ==== MAIN LOOP ====
+				
 				time_stop = clock();
-				getch(); // clear key
+				if(kbhit() != 0) {
+					getch(); // clear key
+				}
 			}
-		}		
-		
+		}				
+
 		// Stop SB
 		stop_sb(sb_port, sb_dma);
 

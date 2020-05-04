@@ -229,7 +229,7 @@ static void doFunk(channel * cptr)
 	}
 }
 
-static void worknote( note * nptr, channel * cptr,char t,modcontext * mod )
+static void worknote( note * nptr, channel * cptr,char t, modcontext * mod )
 {
 	muint sample, period, effect, operiod;
 	muint curnote, arpnote;
@@ -577,8 +577,10 @@ static void worknote( note * nptr, channel * cptr,char t,modcontext * mod )
 			mod->patternpos = ( (muint)(effect_param_h) * 10 + effect_param_l ) * mod->number_of_channels;
 			mod->jump_loop_effect = 1;
 			mod->tablepos++;
-			if(mod->tablepos >= mod->song.length)
+			if(mod->tablepos >= mod->song.length) {
 				mod->tablepos = 0;
+				mod->end_of_song = 1;
+			}
 
 		break;
 
@@ -1085,7 +1087,7 @@ int hxcmod_init(modcontext * modctx)
 
 	if( modctx )
 	{
-		memclear(modctx,0,sizeof(modcontext));
+		memclear(modctx, 0, sizeof(modcontext));
 		modctx->playrate = 44100;
 		modctx->stereo = 1;
 		modctx->stereo_separation = 1;
@@ -1348,7 +1350,6 @@ void hxcmod_fillbuffer(modcontext * modctx, msample * outbuffer, mssize nbsample
 	#endif
 			lr = modctx->last_r_sample;
 #endif
-
 			for (i = 0; i < nbsample; i++)
 			{
 				//---------------------------------------
@@ -1367,7 +1368,7 @@ void hxcmod_fillbuffer(modcontext * modctx, msample * outbuffer, mssize nbsample
 
 						for(c=0;c<modctx->number_of_channels;c++)
 						{
-							worknote((note*)(nptr), (channel*)(cptr),(char)(c+1),modctx);
+							worknote((note*)(nptr), (channel*)(cptr), (char)(c+1), modctx);
 
 							if (cptr->period != 0)
 							{
@@ -1397,8 +1398,9 @@ void hxcmod_fillbuffer(modcontext * modctx, msample * outbuffer, mssize nbsample
 						{
 							modctx->tablepos++;
 							modctx->patternpos = 0;
-							if(modctx->tablepos >= modctx->song.length)
+							if(modctx->tablepos >= modctx->song.length) {
 								modctx->tablepos = 0;
+							}
 						}
 					}
 					else
@@ -1718,6 +1720,7 @@ void hxcmod_fillbuffer(modcontext * modctx, msample * outbuffer, mssize nbsample
 #endif
 		}
 	}
+
 }
 
 void hxcmod_unload( modcontext * modctx )

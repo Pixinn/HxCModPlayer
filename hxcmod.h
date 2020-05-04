@@ -208,11 +208,13 @@ typedef struct {
 	mint    bits;
 	mint    filter;
 
+	int 	end_of_song;
 #ifdef EFFECTS_USAGE_STATE
 	int effects_event_counts[32];
 #endif
 
 } modcontext;
+
 
 //
 // Player states structures
@@ -236,7 +238,7 @@ typedef struct tracker_state_
 	int16_t cur_pattern_table_pos;
 	uint32_t buf_index;
 	track_state tracks[NUMMAXCHANNELS];
-}tracker_state;
+} tracker_state;
 
 typedef struct tracker_state_instrument_
 {
