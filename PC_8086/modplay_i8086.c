@@ -314,7 +314,8 @@ int main(int argc, char* argv[])
 						it_flag = 0x00;
 
 						if( modctx->tablepos != last_pattern) { // on pattern change
-							printf("Pattern %d\n", modctx->tablepos);
+							printf("Position: %d\r", modctx->tablepos);
+							fflush(stdout);
 							last_pattern = modctx->tablepos;
 						}
 
