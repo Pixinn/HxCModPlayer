@@ -29,7 +29,6 @@
 
 #include "../hxcmod.h"
 
-extern unsigned char rawModData[22052];
 
 #define DMA_PAGESIZE 4096
 #define SB_SAMPLE_RATE 22050
@@ -213,7 +212,9 @@ void stop_sb(int port, int dma)
 
 int main(int argc, char* argv[])
 {
-	
+	FILE* mod;
+	int size_mod, size_read;
+	unsigned char * rawModData;
 	int sb_port,sb_irq_int,sb_dma;
 	int i;
 	modcontext * modctx;
@@ -223,10 +224,38 @@ int main(int argc, char* argv[])
 	int cpu_usage, nb_lost_frames;
 	int last_pattern;
 
+	if(argc != 2) {
+		printf("Error: missing argument.\nUsage: hxcmod [FILE]\n");
+		exit(-1);
+	} 
+
+	// open the file
+	mod = fopen(argv[1], "rb");
+	if(mod == NULL) {
+		printf("Error: %s is not a file", argv[1]);
+		exit(-1);
+	}
+	if(fseek(mod, 0, SEEK_END) != 0) {
+		printf("Error: %s is bad.", argv[1]);
+		exit(-1);
+	} 
+	size_mod = ftell(mod);
+	rawModData = malloc( size_mod );
+	if(rawModData == NULL) {
+		printf("Error: could not allocate enough memory for the module.");
+		exit(-1);
+	}
+	fseek(mod, 0, SEEK_SET);
+	size_read = fread(rawModData, 1, size_mod, mod);
+	if( size_read != size_mod) {
+		printf("Error: cannot properly read %s %d\n", argv[1], size_read);
+		exit(-1);
+	}
+
 	printf("PC-8086 Real mode HxCMod Test program\n");
 
 	if( get_sb_config(&sb_port, &sb_irq_int, &sb_dma) != 0) {
-		printf("Could not read the Sound Blaster configuration.\nCheck the BLASTER environment variable.\n");
+		printf("Error: Could not read the Sound Blaster configuration.\nCheck the BLASTER environment variable.\n");
 		exit(-1);
 	}
 	it_sbport = sb_port;
@@ -237,7 +266,7 @@ int main(int argc, char* argv[])
 	dma_buffer = malloc(DMA_PAGESIZE*2);
 	if(!dma_buffer)
 	{
-		printf("DMA allocation failed !\n");
+		printf("Error: DMA memory allocation failed !\n");
 		exit(-1);
 	}
 
@@ -268,7 +297,7 @@ int main(int argc, char* argv[])
 			last_toggle = 0;
 
 
-			if(hxcmod_load( modctx, rawModData, sizeof(rawModData) ))
+			if(hxcmod_load( modctx, rawModData, size_mod))
 			{
 				printf("Playing \"%s\"\nLength: %d patterns\n", modctx->song.title, modctx->song.length);
 				
