@@ -18,10 +18,10 @@ hxcmod.obj : ..\hxcmod.c .AUTODEPEND
 modpla~1.obj : modpla~1.c .AUTODEPEND
  * $(CC) modpla~1.c -i="C:\WATCOM/h" -w4 -e25 $(DEFINES) $(CCFLAGS)
 
-hxcmod.com : sb_io.obj hxcmod.obj modpla~1.obj sb_io.h .AUTODEPEND
+hxcmod.exe : sb_io.obj hxcmod.obj modpla~1.obj sb_io.h .AUTODEPEND
  @%write hxcmod.lk1 FIL sb_io.obj,hxcmod.obj,modpla~1.obj
  @%append hxcmod.lk1 
- *wlink name hxcmod sys dos com op m libf cstart_t op maxe=25 op q op symf @&
+ *wlink name hxcmod sys dos op q op symf @&
 hxcmod.lk1
 
 clean:
