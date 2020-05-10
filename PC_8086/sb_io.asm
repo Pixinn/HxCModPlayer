@@ -15,9 +15,11 @@
 ;// Written by: Jean François DEL NERO
 ;///////////////////////////////////////////////////////////////////////////////////
 
-.MODEL SMALL
+.MODEL COMPACT
 
-.data
+.STACK 512
+
+.DATA
 
 PUBLIC     _it_flag
 PUBLIC     _it_toggle
@@ -28,21 +30,22 @@ _it_flag   db 0
 _it_toggle db 0
 _it_irq    db 0
 _it_sbport dw 0220h
+
 it_old_handler_seg dw 0
 it_old_handler_off dw 0
 
 ;-----------------------------------------------
-.code
+.CODE
 
 sb_irq_ proc
 	push dx
 	push ax
 	push ds
 
-	mov ax,cs
-	mov ds,ax
+	mov ax, @DATA
+	mov ds, ax
 
-	mov dx,ds:[_it_sbport]
+	mov dx, ds:[_it_sbport]
 	add dx,0eh
 	in  al,dx
 
@@ -60,6 +63,7 @@ sb_irq_ proc
 	pop ds
 	pop ax
 	pop dx
+
 	iret
 sb_irq_ endp
 
@@ -77,8 +81,12 @@ install_irq_ proc near public
 	push dx
 	push es
 	push bx
+	push ds
 
 	cli
+
+	mov ax, @DATA
+	mov ds, ax
 
 	; save the existing interrupt handler
 	mov ah, 35h
@@ -93,10 +101,13 @@ install_irq_ proc near public
 	mov al, ds:[_it_irq]
 	add al, 8h
 	mov dx, sb_irq_
+	mov bx, cs
+	mov ds, bx
 	int 21h
 
 	sti
 
+	pop ds
 	pop bx
 	pop es
 	pop dx

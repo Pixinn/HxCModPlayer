@@ -24,6 +24,7 @@
 #include <dos.h>
 #include <conio.h>
 #include <i86.h>
+#include <stddef.h>
 
 #include "sb_io.h"
 
@@ -114,7 +115,7 @@ int init_sb(int port,int irq,int dma)
 
 	outp(0x21 + (irq & 8), inp(0x21 + (irq & 8) ) |  (0x01 << (irq&7)) ); // Mask the IRQ
 	install_irq();
-	outp(0x21 + (irq & 8), inp(0x21 + (irq & 8) ) & ~(0x01 << (irq&7)) ); // Enable the IRQ
+	outp(0x21 + (irq & 8), inp(0x21 + (irq & 8) ) & ~(0x01 << (irq&7)) ); // Enable the IRQ	
 
 	if( reset_sb(port) != 0 && inp(port + SB_DSP_READ_REG) == 0xAA )
 	{
