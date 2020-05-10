@@ -1,7 +1,7 @@
 !define BLANK ""
 
 CC = wcc
-CCFLAGS386 = -zq -otexan -s -3 -ob -ol -ol+ -oc -oi -oa -or -oh -bt=dos -fo=.obj -ms
+CCFLAGS386 = -zq -otexan -s -3 -ob -ol -ol+ -oc -oi -oa -or -oh -bt=dos -fo=.obj -mm
 CCFLAGS8086 = -zq -otexan -s -0 -ob -ol -ol+ -oc -oi -oa -or -oh -bt=dos -fo=.obj -ms 
 DEFINES386 = -dHXCMOD_8BITS_OUTPUT -dHXCMOD_UNSIGNED_OUTPUT -dHXCMOD_16BITS_TARGET -dSB16 
 DEFINES8086 = -dHXCMOD_8BITS_OUTPUT -dHXCMOD_UNSIGNED_OUTPUT -dHXCMOD_MONO_OUTPUT -dHXCMOD_16BITS_TARGET -dHXCMOD_SLOW_TARGET

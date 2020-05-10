@@ -15,7 +15,7 @@
 ;// Written by: Jean François DEL NERO
 ;///////////////////////////////////////////////////////////////////////////////////
 
-.MODEL COMPACT
+.MODEL MEDIUM
 
 .STACK 512
 
@@ -69,14 +69,14 @@ sb_irq_ endp
 
 ;-----------------------------------------------
 
-get_cur_ds_ proc near public
+get_cur_ds_ proc public
 	mov ax,ds
-	retn
+	ret
 get_cur_ds_ endp
 
 ;-----------------------------------------------
 
-install_irq_ proc near public
+install_irq_ proc public
 	push ax
 	push dx
 	push es
@@ -93,8 +93,8 @@ install_irq_ proc near public
 	mov al, ds:[_it_irq]
 	add al, 8h
 	int 21h
-	mov [it_old_handler_seg], es
-	mov [it_old_handler_off], bx
+	mov ds:[it_old_handler_seg], es
+	mov ds:[it_old_handler_off], bx
 
 	; set our it handler
 	mov ah, 25h
@@ -112,24 +112,27 @@ install_irq_ proc near public
 	pop es
 	pop dx
 	pop ax
-	retn
+	ret
 install_irq_ endp
 
 ;-----------------------------------------------
 
-uninstall_irq_ proc near public
+uninstall_irq_ proc public
 	push ax
 	push dx
 	push ds
 
 	cli
 
+	mov ax, @DATA
+	mov ds, ax
+
 	; restore the old it handler
 	mov ah, 25h
 	mov al, ds:[_it_irq]
 	add al, 8h
-	mov dx, [it_old_handler_off]
-	mov ds, [it_old_handler_seg]
+	mov dx, ds:[it_old_handler_off]
+	mov ds, ds:[it_old_handler_seg]
 	int 21h
 
 	sti
@@ -137,12 +140,12 @@ uninstall_irq_ proc near public
 	pop ds
 	pop dx
 	pop ax
-	retn
+	ret
 uninstall_irq_ endp
 
 ;-----------------------------------------------
 
-SB_DSP_wr_ proc near public
+SB_DSP_wr_ proc public
 	push dx
 	push ax
 
@@ -165,12 +168,12 @@ wait_wr_dsp_loop:
 
 	pop dx
 
-	retn
+	ret
 SB_DSP_wr_ endp
 
 ;-----------------------------------------------
 
-SB_DSP_rd_ proc near public
+SB_DSP_rd_ proc public
 	push dx
 
 	mov dx,ax
@@ -188,7 +191,7 @@ wait_rd_dsp_loop:
 
 	pop dx
 
-	retn
+	ret
 SB_DSP_rd_ endp
 
 END
