@@ -15,7 +15,7 @@
 ;// Written by: Jean François DEL NERO
 ;///////////////////////////////////////////////////////////////////////////////////
 
-.MODEL MEDIUM
+.MODEL LARGE
 
 .STACK 512
 
@@ -67,12 +67,6 @@ sb_irq_ proc
 	iret
 sb_irq_ endp
 
-;-----------------------------------------------
-
-get_cur_ds_ proc public
-	mov ax,ds
-	ret
-get_cur_ds_ endp
 
 ;-----------------------------------------------
 

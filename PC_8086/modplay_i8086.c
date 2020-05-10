@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <time.h>
 
@@ -49,8 +50,8 @@ unsigned char DMACount[]    = {0x01,0x03,0x05,0x07,0xC2,0xC6,0xCA,0xCE};
 unsigned char DMAAddress[]  = {0x00,0x02,0x04,0x06,0xC0,0xC4,0xC8,0xCC};
 unsigned char DMAPage[]     = {0x87,0x83,0x81,0x82,0x8F,0x8B,0x89,0x8A};
 
-volatile unsigned char * dma_buffer;
-volatile unsigned char * fixed_dma_buffer;
+volatile unsigned char far * dma_buffer;
+volatile unsigned char far * fixed_dma_buffer;
 
 
 int reset_sb(const int port)
@@ -106,12 +107,12 @@ int get_sb_config(int* port,int* irq, int* dma)
 
 int init_sb(int port,int irq,int dma)
 {
-	unsigned int temp, segment, offset;
-	unsigned long foo;
-	unsigned char dma_page;
-	unsigned int dma_offset;
-	unsigned short dsp_ver_major;
-	unsigned short dsp_ver_minor;
+	uint16_t temp, segment, offset;
+	uint32_t foo;
+	uint8_t dma_page;
+	uint16_t dma_offset;
+	uint16_t dsp_ver_major;
+	uint16_t dsp_ver_minor;
 
 	outp(0x21 + (irq & 8), inp(0x21 + (irq & 8) ) |  (0x01 << (irq&7)) ); // Mask the IRQ
 	install_irq();
@@ -135,8 +136,8 @@ int init_sb(int port,int irq,int dma)
 		outp(DMACount[dma],((DMA_PAGESIZE - 1)>> 8) & 0xFF );
 
 		// Segment/Offset to DMA 20 bits Page/offset physical address
-		segment = get_cur_ds();
-		offset  = (unsigned int)dma_buffer;
+		segment = (uint16_t)((uint32_t)(dma_buffer) >> 16);
+		offset  = (uint16_t)dma_buffer;
 		fixed_dma_buffer = dma_buffer;
 
 		dma_page = ((segment & 0xF000) >> 12);
@@ -265,6 +266,7 @@ int main(int argc, char* argv[])
 	printf("Init Sound Blaster : Port 0x%x, IRQ %d, DMA: %d\n",sb_port,sb_irq_int,sb_dma);
 
 	dma_buffer = malloc(DMA_PAGESIZE*2);
+	printf("dma_buffer : %Fp\n", dma_buffer);
 	if(!dma_buffer)
 	{
 		printf("Error: DMA memory allocation failed !\n");
@@ -296,7 +298,7 @@ int main(int argc, char* argv[])
 			printf("Sound configuration done !\n");
 
 			last_toggle = 0;
-
+			time_stop = 0;
 
 			if(hxcmod_load( modctx, rawModData, size_mod))
 			{
@@ -346,6 +348,9 @@ int main(int argc, char* argv[])
 					getch(); // clear key
 				}
 			}
+			else {
+				printf("Error: could not load or decode module's data.\n");
+			}
 		}				
 
 		// Stop SB
@@ -356,8 +361,10 @@ int main(int argc, char* argv[])
 		free(modctx);
 
 		// Display bench
-		cpu_usage = 1000 * time_process_acc / (time_stop - time_start);
-		printf("Nb frames lost: %d\nCPU usage: %d.%d%%\n", nb_lost_frames, cpu_usage / 10, cpu_usage % 10);
+		if(time_stop != 0) {
+			cpu_usage = 1000 * time_process_acc / (time_stop - time_start);
+			printf("Nb frames lost: %d\nCPU usage: %d.%d%%\n", nb_lost_frames, cpu_usage / 10, cpu_usage % 10);
+		}
 
 	}
 	else

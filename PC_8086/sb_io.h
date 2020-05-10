@@ -39,7 +39,6 @@ extern volatile unsigned char it_toggle;
 extern volatile unsigned char it_irq;
 extern volatile unsigned int  it_sbport;
 
-extern unsigned short get_cur_ds( );
 extern void install_irq();
 extern void uninstall_irq();
 extern void SB_DSP_wr(unsigned int baseport, unsigned char value);
